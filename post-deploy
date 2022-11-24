@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -eo pipefail; [[ $DOKKU_TRACE ]] && set -x
+source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
+
+letsencrypt-auto-enable() {
+    local APP="$1"; verify_app_name "$APP"
+
+    dokku_log_info1 "Let's Encrypt auto enable plugin:"
+    dokku_log_verbose "Checking for DOKKU_LETSENCRYPT_AUTO_ENABLE=0..."
+
+    # This may be replaced with config-get plugin trigger in the future. A documentation is currently incomplete, so I'm not sure.
+    local PLUGIN_ENABLED=$(dokku config:get "$APP" DOKKU_LETSENCRYPT_AUTO_ENABLE);
+
+    if [[ 0 = "$PLUGIN_ENABLED" ]]; then
+        dokku_log_verbose "Auto enable is explicitly disabled for this app, skipping."
+        return 0
+    fi
+
+    dokku_log_verbose "Auto enable is active by default. Checking if the Let's Encrypt is enabled."
+
+    # Get cert info for the app, if available.
+    # $APP_CERT_INFO will be empty if no cert is found for the $APP app
+    # (The space after APP_NAME prevents matching substrings)
+    local APP_CERT_INFO=$(dokku letsencrypt:list | grep "$APP ")
+
+    if [ -z "$APP_CERT_INFO" ]
+    then
+      dokku_log_info2 "Let's Encrypt certificate seems to be missing, enabling now..."
+    else
+      dokku_log_verbose "Let's Encrypt is already enabled, skipping."
+      return 0
+    fi
+
+    local OUTPUT=$(source dokku letsencrypt:enable "$APP")
+    dokku_log_verbose_quiet "$OUTPUT"
+}
+
+letsencrypt-auto-enable "$@"

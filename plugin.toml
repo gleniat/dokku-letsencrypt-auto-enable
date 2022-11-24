@@ -1,0 +1,4 @@
+[plugin]
+description="Dokku plugin to enable Let's Encrypt HTTPS by default. To prevent enabling LE automatically, you can add DOKKU_LETSENCRYPT_AUTO_ENABLE environment variable and set it to 0. The plugin requires having letsencrypt plugin installed and working."
+version="0.1.0"
+[plugin.config]
