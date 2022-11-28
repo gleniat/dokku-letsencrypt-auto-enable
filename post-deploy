@@ -18,12 +18,9 @@ letsencrypt-auto-enable() {
 
     dokku_log_verbose "Auto enable is active by default. Checking if the Let's Encrypt is enabled."
 
-    # Get cert info for the app, if available.
-    # $APP_CERT_INFO will be empty if no cert is found for the $APP app
-    # (The space after APP_NAME prevents matching substrings)
-    local APP_CERT_INFO=$(dokku letsencrypt:list | grep "$APP ")
+    local LE_IS_ACTIVE=$(dokku letsencrypt:active "$APP")
 
-    if [ -z "$APP_CERT_INFO" ]
+    if [ -z "$LE_IS_ACTIVE" ]
     then
       dokku_log_info2 "Let's Encrypt certificate seems to be missing, enabling now..."
     else
